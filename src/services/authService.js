@@ -31,6 +31,23 @@ class AuthService {
       throw ApiError.conflict('Email already registered');
     }
 
+    const toOptionalString = (value) => {
+      if (value === undefined || value === null || value === '') {
+        return undefined;
+      }
+      return String(value);
+    };
+
+    const normalizedInstitutionId = toOptionalString(institutionId);
+    const normalizedDepartmentId = toOptionalString(departmentId);
+    const normalizedStudentId = toOptionalString(studentId);
+    const normalizedSectionId = toOptionalString(sectionId);
+    const normalizedAssignedSections = Array.isArray(assignedSections)
+      ? assignedSections
+        .map((id) => toOptionalString(id))
+        .filter(Boolean)
+      : [];
+
     // Skip institution validation - it's optional and may not be a valid ObjectId
 
     // Hash password
@@ -44,15 +61,15 @@ class AuthService {
         firstName,
         lastName,
         role: role || 'student',
-        institutionId: institutionId || undefined,
-        departmentId: departmentId || undefined,
-        studentId: studentId || undefined,
-        sectionId: sectionId || undefined,
+        institutionId: normalizedInstitutionId,
+        departmentId: normalizedDepartmentId,
+        studentId: normalizedStudentId,
+        sectionId: normalizedSectionId,
         employeeId: employeeId || undefined,
         designation: designation || undefined,
-        educatorSections: assignedSections?.length
+        educatorSections: normalizedAssignedSections.length
           ? {
-            create: assignedSections.map((sectionId) => ({ sectionId })),
+            create: normalizedAssignedSections.map((sectionId) => ({ sectionId })),
           }
           : undefined,
       },
